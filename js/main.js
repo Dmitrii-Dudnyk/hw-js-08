@@ -15,15 +15,16 @@ const lightboxEl = document.querySelector(".lightbox");
 const lightboxImageEl = document.querySelector("img.lightbox__image");
 const closeBtnLightboxEl = document.querySelector('button[data-action="close-lightbox"]');
 const closeOutsideLightboxEl = document.querySelector(".lightbox__overlay");
+let currIndex = 0;
 
 const imagesMarkup = images
   .map(
-    image =>
+    (image, index) =>
       `<li class="gallery__item">
-  <a class="gallery__link" href=${image.original}>
-  <img class="gallery__image" src=${image.preview} data-source=${image.original} alt=${image.description}>
-  </a>
-  </li>`
+      <a class="gallery__link" href=${image.original}>
+          <img class="gallery__image" src=${image.preview} data-source=${image.original} data-index=${index} alt=${image.description}>
+        </a>
+        </li>`
   )
   .join("");
 
@@ -38,19 +39,42 @@ function openModal(e) {
     return;
   }
   e.preventDefault();
-  window.addEventListener("keydown", onEscKeyPress);
-  lightboxImageEl.setAttribute("src", e.target.dataset.source);
+  window.addEventListener("keydown", onKeyPress);
+  currIndex = Number(e.target.dataset.index);
+  lightboxImageEl.setAttribute("src", `${images[currIndex].original}`);
+  lightboxImageEl.setAttribute("alt", `${images[currIndex].description}`);
   lightboxEl.classList.add("is-open");
 }
 
 function closeModal() {
-  window.removeEventListener("keydown", onEscKeyPress);
+  window.removeEventListener("keydown", onKeyPress);
   lightboxImageEl.setAttribute("src", "");
+  lightboxImageEl.setAttribute("alt", "");
   lightboxEl.classList.remove("is-open");
 }
 
-function onEscKeyPress(e) {
+function sliderModal(e) {
+  if (e.code === "ArrowLeft") {
+    currIndex -= 1;
+    if (currIndex < 0) {
+      currIndex = images.length - 1;
+    }
+  }
+  if (e.code === "ArrowRight") {
+    currIndex += 1;
+    if (currIndex > images.length - 1) {
+      currIndex = 0;
+    }
+  }
+  lightboxImageEl.setAttribute("src", `${images[currIndex].original}`);
+  lightboxImageEl.setAttribute("alt", `${images[currIndex].description}`);
+}
+
+function onKeyPress(e) {
   if (e.code === "Escape") {
     closeModal();
+  }
+  if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+    sliderModal(e);
   }
 }
